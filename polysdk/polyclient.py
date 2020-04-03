@@ -4,11 +4,6 @@ import logging
 import csv
 import sys
 
-if sys.version_info[0] < 3:
-    from StringIO import StringIO
-else:
-    from io import StringIO
-
 from polysdk.models.maskeddata import MaskedData
 from polysdk.models.unmaskeddata import UnmaskedData
 
@@ -25,8 +20,12 @@ class PolyClient:
     }
 
     @staticmethod
-    def __validate_args(data, key):
-        return data is not '' and key is not ''
+    def __validate_args(text, key):
+        return text is not '' and key is not ''
+
+    @staticmethod
+    def __validate_file_args(file_path, key):
+        return file_path is not '' and key is not ''
 
     def __init__(self, api_token):
         if api_token is '' or len(api_token) != 32:
@@ -37,13 +36,13 @@ class PolyClient:
         self.__api_token = api_token
         self.__api_headers['Public-Token'] = self.__api_token
 
-    def mask_data(self, data, key):
-        if not self.__validate_args(data, key):
-            raise Exception("data or key is empty.")
+    def mask_text(self, text, key):
+        if not self.__validate_args(text, key):
+            raise Exception("text or key is empty.")
 
         payload = {
-            'key': key,
-            'text': data
+            'text': text,
+            'key': key
         }
 
         r = requests.post(self.__mask_api_url, data=json.dumps(payload), headers=self.__api_headers)
@@ -54,19 +53,18 @@ class PolyClient:
             response_body = r.json()
 
             data = MaskedData(text=response_body['text'])
-
             return data
         except Exception:
             logging.exception('Error: ' + r.text)
             raise Exception(r.text)
 
-    def unmask_data(self, data, key):
-        if not self.__validate_args(data, key):
-            raise Exception("data or key is empty.")
+    def unmask_text(self, text, key):
+        if not self.__validate_args(text, key):
+            raise Exception("text or key is empty.")
 
         payload = {
-            'key': key,
-            'text': data
+            'text': text,
+            'key': key
         }
 
         r = requests.post(self.__unmask_api_url, data=json.dumps(payload), headers=self.__api_headers)
@@ -82,3 +80,21 @@ class PolyClient:
         except Exception:
             logging.exception('Error: ' + r.text)
             raise Exception(r.text)
+
+    def mask_file(self, file_path, key):
+        if not self.__validate_file_args(file_path, key):
+            raise Exception("file_path or key is empty.")
+
+        with open(file_path) as file:
+            text = file.read()
+            masked_data = self.mask_text(text=text, key=key)
+            return masked_data
+
+    def unmask_file(self, file_path, key):
+        if not self.__validate_file_args(file_path, key):
+            raise Exception("file_path or key is empty.")
+
+        with open(file_path) as file:
+            text = file.read()
+            unmasked_data = self.unmask_text(text=text, key=key)
+            return unmasked_data
