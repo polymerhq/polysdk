@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="polysdk",
-    version="0.0.5",
+    version="0.0.6",
     author="Fahad Siddiqui",
     author_email="fsid@predictdata.io",
     description="Polymer Python SDK.",

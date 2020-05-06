@@ -1,15 +1,13 @@
 import requests
 import json
 import logging
-import csv
-import sys
 
 from polysdk.models.maskeddata import MaskedData
 from polysdk.models.unmaskeddata import UnmaskedData
 
 
 class PolyClient:
-    __base_url = "http://localhost:4560"
+    __base_url = "https://v1.polymerapp.io:4560"
     __mask_api_url = __base_url + "/v1/pub/mask"
     __unmask_api_url = __base_url + "/v1/pub/unmask"
     __mask_files_api_url = __base_url + "/v1/pub/mask/files"
