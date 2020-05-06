@@ -9,11 +9,17 @@ from polysdk.models.unmaskeddata import UnmaskedData
 
 
 class PolyClient:
-    __base_url = "https://v1.polymerapp.io:4560"
+    __base_url = "http://localhost:4560"
     __mask_api_url = __base_url + "/v1/pub/mask"
     __unmask_api_url = __base_url + "/v1/pub/unmask"
+    __mask_files_api_url = __base_url + "/v1/pub/mask/files"
 
     __api_token = ""
+    __api_headers = {
+        'Content-Type': 'application/json',
+        'Public-Token': ''
+    }
+
     __api_headers = {
         'Content-Type': 'application/json',
         'Public-Token': ''
@@ -81,7 +87,7 @@ class PolyClient:
             logging.exception('Error: ' + r.text)
             raise Exception(r.text)
 
-    def mask_file(self, file_path, key):
+    def mask_text_file(self, file_path, key):
         if not self.__validate_file_args(file_path, key):
             raise Exception("file_path or key is empty.")
 
@@ -90,7 +96,7 @@ class PolyClient:
             masked_data = self.mask_text(text=text, key=key)
             return masked_data
 
-    def unmask_file(self, file_path, key):
+    def unmask_text_file(self, file_path, key):
         if not self.__validate_file_args(file_path, key):
             raise Exception("file_path or key is empty.")
 
@@ -98,3 +104,35 @@ class PolyClient:
             text = file.read()
             unmasked_data = self.unmask_text(text=text, key=key)
             return unmasked_data
+
+    def mask_csv_file(self, file_path, key):
+        if not self.__validate_file_args(file_path, key):
+            raise Exception("file_path or key is empty.")
+
+        api_url = self.__mask_files_api_url
+        files = {
+            'source': open(file_path, 'rb')
+        }
+
+        custom_headers = self.__api_headers
+        custom_headers.pop('Content-Type')
+        custom_headers = {
+            **custom_headers
+        }
+
+        custom_data = {
+            'password': key
+        }
+
+        r = requests.post(api_url, files=files, data=custom_data, headers=custom_headers)
+
+        try:
+            logging.info('Status code: ' + str(r.status_code))
+            logging.info('Response body: ' + str(r.json()))
+            response_body = r.json()
+
+            data = MaskedData(text=response_body)
+            return data
+        except Exception:
+            logging.exception('Error: ' + r.text)
+            raise Exception(r.text)
