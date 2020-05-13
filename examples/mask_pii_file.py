@@ -7,7 +7,7 @@ visit https://v1.polymerapp.io/ where
 you can generate client_token from 
 "Developer API" option under user icon
 """
-client_token = "c4855ffe7c37cc4bb14f7d7988e03fff"
+client_token = 'f4f94075d3d8ffe48adeb227f2a62d72'
 
 client = PolyClient(api_token=client_token)
 
@@ -21,6 +21,5 @@ text = """Hi Professor! Email: [[3TpPh25m/39RMO9mY6KnjnATDzkrzOKr8S/paE6Vpzg=]] 
 umd = client.unmask_text(text=text, key=masking_key)
 print(umd.get_text())
 
-md = client.mask_csv_file("./examples/us-500.csv", masking_key)
-
+md = client.mask_csv_file("./us-500.csv", masking_key, ['email', 'last_name'])
 print(md.get_text())

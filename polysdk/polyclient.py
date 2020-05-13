@@ -18,11 +18,6 @@ class PolyClient:
         'Public-Token': ''
     }
 
-    __api_headers = {
-        'Content-Type': 'application/json',
-        'Public-Token': ''
-    }
-
     @staticmethod
     def __validate_args(text, key):
         return text is not '' and key is not ''
@@ -103,7 +98,9 @@ class PolyClient:
             unmasked_data = self.unmask_text(text=text, key=key)
             return unmasked_data
 
-    def mask_csv_file(self, file_path, key):
+    def mask_csv_file(self, file_path, key, selected_columns=None):
+        if selected_columns is None:
+            selected_columns = []
         if not self.__validate_file_args(file_path, key):
             raise Exception("file_path or key is empty.")
 
@@ -112,14 +109,14 @@ class PolyClient:
             'source': open(file_path, 'rb')
         }
 
-        custom_headers = self.__api_headers
-        custom_headers.pop('Content-Type')
         custom_headers = {
-            **custom_headers
+            **self.__api_headers
         }
+        custom_headers.pop('Content-Type')
 
         custom_data = {
-            'password': key
+            'password': key,
+            'selected_columns': ','.join(selected_columns) if selected_columns is not [] else ''
         }
 
         r = requests.post(api_url, files=files, data=custom_data, headers=custom_headers)
