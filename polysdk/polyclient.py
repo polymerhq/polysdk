@@ -11,6 +11,7 @@ class PolyClient:
     __mask_api_url = __base_url + "/v1/pub/mask"
     __unmask_api_url = __base_url + "/v1/pub/unmask"
     __mask_files_api_url = __base_url + "/v1/pub/mask/files"
+    __unmask_files_api_url = __base_url + "/v1/pub/unmask/files"
 
     __api_token = ""
     __api_headers = {
@@ -117,6 +118,37 @@ class PolyClient:
         custom_data = {
             'password': key,
             'selected_columns': ','.join(selected_columns) if selected_columns is not [] else ''
+        }
+
+        r = requests.post(api_url, files=files, data=custom_data, headers=custom_headers)
+
+        try:
+            logging.info('Status code: ' + str(r.status_code))
+            logging.info('Response body: ' + str(r.json()))
+            response_body = r.json()
+
+            data = MaskedData(text=response_body)
+            return data
+        except Exception:
+            logging.exception('Error: ' + r.text)
+            raise Exception(r.text)
+
+    def unmask_csv_file(self, file_path, key):
+        if not self.__validate_file_args(file_path, key):
+            raise Exception("file_path or key is empty.")
+
+        api_url = self.__unmask_files_api_url
+        files = {
+            'source': open(file_path, 'rb')
+        }
+
+        custom_headers = {
+            **self.__api_headers
+        }
+        custom_headers.pop('Content-Type')
+
+        custom_data = {
+            'password': key
         }
 
         r = requests.post(api_url, files=files, data=custom_data, headers=custom_headers)
